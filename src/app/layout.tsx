@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/context/AuthProvider";
-import { Toaster } from 'react-hot-toast';
+import {Toaster} from "react-hot-toast";
 import Navbar from "@/components/Navbar";
-
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,20 +22,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-     <AuthProvider>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-          <Navbar/>
-        {children}
-         <Toaster />
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        
+        {/* Providers MUST be inside body */}
+        <AuthProvider>
+          <Navbar />
+          {children}
+        <Toaster />
+        </AuthProvider>
+
+        {/* Toast system must be inside body but outside providers */}
       </body>
- </AuthProvider>
     </html>
   );
 }

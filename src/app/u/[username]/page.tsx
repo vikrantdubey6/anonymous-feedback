@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { CardHeader, CardContent, Card } from '@/components/ui/card';
-// import { useCompletion } from 'ai/react';
+import {useCompletion}  from '@ai-sdk/react';
 import {
   Form,
   FormControl,
@@ -17,13 +16,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-// import { Textarea } from '@/components/ui/textarea';
-// import { toast } from '@/components/ui/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import toast from 'react-hot-toast';
 import * as z from 'zod';
 import { ApiResponse } from '@/types/ApiResponse';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { acceptMessageSchema } from '@/schemas/messageSchema';
+import { messageSchema } from '@/schemas/messageSchema';
 
 const specialChar = '||';
 
@@ -68,19 +67,13 @@ export default function SendMessage() {
         username,
       });
 
-      toast({
-        title: response.data.message,
-        variant: 'default',
-      });
+      toast.success(
+       "Message sent successfully"  );
       form.reset({ ...form.getValues(), content: '' });
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: 'Error',
-        description:
-          axiosError.response?.data.message ?? 'Failed to sent message',
-        variant: 'destructive',
-      });
+      toast.error(
+          "failed to sent the message" )
     } finally {
       setIsLoading(false);
     }

@@ -1,5 +1,4 @@
 'use client';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -24,14 +23,14 @@ export default function SignInForm() {
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      identifier: '',
-      password: '',
+      identifier: "",
+      password: "",
     },
   });
 
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    const result = await signIn('Credentials', {
+    const result = await signIn('credentials', {
       redirect: false,
       identifier: data.identifier,
       password: data.password,
@@ -48,7 +47,7 @@ export default function SignInForm() {
     }
 
     if (result?.url) {
-      router.replace('/dashboard');
+      router.replace("/dashboard");
     }
   };
 
