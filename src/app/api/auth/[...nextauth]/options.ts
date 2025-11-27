@@ -1,17 +1,17 @@
 import { NextAuthOptions } from "next-auth";
-import CreadentialsProvider from "next-auth/providers/credentials";
+import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    CreadentialsProvider({
+    CredentialsProvider({
       id: "credentials",
       name: "Credentials",
       credentials: {
         email: {
-          label: "Username",
+          label: "Email",
           type: "text",
         },
         password: { label: "Password", type: "password" },
@@ -22,8 +22,8 @@ export const authOptions: NextAuthOptions = {
         try {
           const user = await UserModel.findOne({
             $or: [
-              { email: credentials.identifier },
-              { username: credentials.identifier },
+              { email: credentials.indentifier },
+              { username: credentials.indentifier },
             ],
           });
           if (!user) {
