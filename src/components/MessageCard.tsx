@@ -1,15 +1,14 @@
-"use client";
+'use client'
 import React from "react";
 import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "./ui/card";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,10 +21,11 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog"
 import { Button } from "./ui/button";
-import { X } from "lucide-react";
-import axios from "axios";
+import { Trash, trash } from "lucide-react";
+import axios, { AxiosError } from "axios";
 import { ApiResponse } from "@/types/ApiResponse";
 import toast from "react-hot-toast";
+import { Message } from "@/model/User";
 
 type MessasgeCardProps = {
     message: Message;
@@ -39,7 +39,7 @@ function MessageCard({message, onMessageDelete}: MessasgeCardProps) {
       );
       toast.success( response.data.message,
       )
-      onMessageDelete(message._id);
+      onMessageDelete(message._id as string);
 
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
@@ -47,15 +47,21 @@ function MessageCard({message, onMessageDelete}: MessasgeCardProps) {
           axiosError.response?.data.message ?? 'Failed to delete message'
        );
     } 
-
     }
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Card Title</CardTitle>
+        <CardTitle> {message.content} </CardTitle>
+        <CardDescription> Unknown user {String(message._id)}</CardDescription>
+        <CardAction>{new Date(message.createdAt).toLocaleString()}</CardAction>
+      </CardHeader>
+      <CardContent>
+      </CardContent>
+      <CardFooter>
+        {/* <p className="p-2 m-2 font-medium">Delete  </p> */}
         <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="destructive"><X className='w-5 h-5'/></Button>
+      <AlertDialogTrigger asChild className="items-end">
+        <Button variant="destructive"><Trash className='w-5 h-5'/></Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -71,15 +77,7 @@ function MessageCard({message, onMessageDelete}: MessasgeCardProps) {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-
-        <CardDescription>Card Description</CardDescription>
-        <CardAction>Card Action</CardAction>
-      </CardHeader>
-      <CardContent>
-      </CardContent>
-      {/* <CardFooter>
-        <p>Card Footer</p>
-      </CardFooter> */}
+      </CardFooter>
     </Card>
   );
 }

@@ -8,8 +8,7 @@ import { authOptions } from '../auth/[...nextauth]/options';
 export async function GET(request: Request) {
   await dbConnect();
   const session = await getServerSession(authOptions);
-  const _user: User = session?.user;
-
+  const _user = session?.user as User | undefined;
   if (!session || !_user) {
     return Response.json(
       { success: false, message: 'Not authenticated' },
@@ -31,7 +30,6 @@ export async function GET(request: Request) {
         { status: 404 }
       );
     }
-
     return Response.json(
       { messages: user[0].messages },
       {
