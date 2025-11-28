@@ -1,53 +1,56 @@
-'use client';
-import { ApiResponse } from '@/types/ApiResponse';
-import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useDebounceCallback } from 'usehooks-ts';
-import * as z from 'zod';
-import toast from 'react-hot-toast';
+"use client";
+import { ApiResponse } from "@/types/ApiResponse";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useDebounceCallback } from "usehooks-ts";
+import * as z from "zod";
+import toast from "react-hot-toast";
 
-
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 // import { useToast } from '@/components/ui/use-toast';
-import axios, { AxiosError } from 'axios';
-import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { signUpSchema } from '@/schemas/signUpSchema';
+import axios, { AxiosError } from "axios";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { signUpSchema } from "@/schemas/signUpSchema";
 
 export default function SignUpForm() {
-  const [username, setUsername] = useState('');
-  const [usernameMessage, setUsernameMessage] = useState('');
+  const [username, setUsername] = useState("");
+  const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-const [isSubmitting, setIsSubmitting] = useState(false);
-const debouncedUsername = useDebounceCallback(setUsername, 300);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const debouncedUsername = useDebounceCallback(setUsername, 300);
 
-const router = useRouter();
-// const { toast } = useToast();
+  // for email checking
+  const [email, setEmail] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const debouncedEmail = useDebounceCallback(setEmail, 1000);
 
+  const router = useRouter();
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      username: '',
-      email: '',
-      password: '',
+      username: "",
+      email: "",
+      password: "",
     },
   });
-
+  // for username
   useEffect(() => {
     const checkUsernameUnique = async () => {
       if (username) {
         setIsCheckingUsername(true);
-        setUsernameMessage(''); // Reset message
+        setUsernameMessage(""); // Reset message
         try {
           const response = await axios.get<ApiResponse>(
             `/api/check-username-unique?username=${username}`
@@ -57,7 +60,7 @@ const router = useRouter();
         } catch (error) {
           const axiosError = error as AxiosError<ApiResponse>;
           setUsernameMessage(
-            axiosError.response?.data.message ?? 'Error checking username'
+            axiosError.response?.data.message ?? "Error checking username"
           );
         } finally {
           setIsCheckingUsername(false);
@@ -67,20 +70,42 @@ const router = useRouter();
     checkUsernameUnique();
   }, [username]);
 
+  // for email
+  useEffect(() => {
+    const checkEmailUnique = async () => {
+      if (email) {
+        setIsCheckingEmail(true);
+        setEmailMessage("");
+        try {
+          const response = await axios.get<ApiResponse>(
+            `/api/check-email-unique?email=${email}`
+          );
+          setEmailMessage(response.data.message);
+        } catch (error) {
+          const axiosError = error as AxiosError<ApiResponse>;
+          setEmailMessage(
+            axiosError.response?.data.message ?? "Error checking email"
+          );
+        } finally {
+          setIsCheckingEmail(false);
+        }
+      }
+    };
+    checkEmailUnique();
+  }, [email]);
+
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
     try {
-      const response = await axios.post<ApiResponse>('/api/signUp', data);
+      const response = await axios.post<ApiResponse>("/api/signUp", data);
 
-      toast.success(
-        response.data.message
-      );
+      toast.success(response.data.message);
 
       router.replace(`/verify/${username}`);
 
       setIsSubmitting(false);
     } catch (error) {
-      console.error('Error during sign-up:', error);
+      console.error("Error during sign-up:", error);
 
       // const axiosError = error as AxiosError<ApiResponse>;
 
@@ -89,9 +114,7 @@ const router = useRouter();
       //   axiosError.response?.data.message ??
       //   'There was a problem with your sign-up. Please try again.';
 
-      toast.error(
-        'There was a problem with your sign-up. Please try again.'
-      );
+      toast.error("There was a problem with your sign-up. Please try again.");
 
       setIsSubmitting(false);
     }
@@ -118,16 +141,16 @@ const router = useRouter();
                     {...field}
                     onChange={(e) => {
                       field.onChange(e);
-                     debouncedUsername(e.target.value);
+                      debouncedUsername(e.target.value);
                     }}
                   />
                   {isCheckingUsername && <Loader2 className="animate-spin" />}
                   {!isCheckingUsername && usernameMessage && (
                     <p
                       className={`text-sm ${
-                        usernameMessage === 'Username is Unique'
-                          ? 'text-green-500'
-                          : 'text-red-500'
+                        usernameMessage === "Username is Unique"
+                          ? "text-green-500"
+                          : "text-red-500"
                       }`}
                     >
                       {usernameMessage}
@@ -143,8 +166,28 @@ const router = useRouter();
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
-                  <Input {...field} name="email" />
-                  <p className='text-muted text-gray-400 text-sm'>We will send you a verification code</p>
+                  <Input
+                    {...field}
+                    name="email"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      debouncedEmail(e.target.value);
+                    }}
+                  />
+                  {isCheckingEmail && <Loader2 className="animate-spin" />}
+                  {!isCheckingEmail && emailMessage && (
+                    <p
+                      className={`text-sm ${
+                        emailMessage === "Email is Unique"
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {emailMessage}
+                    </p>
+                  )}
+
+                  {/* <p className=' text-gray-400 text-sm'>We will send you a verification code</p> */}
                   <FormMessage />
                 </FormItem>
               )}
@@ -161,21 +204,21 @@ const router = useRouter();
                 </FormItem>
               )}
             />
-            <Button type="submit" className='w-full' disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Please wait
                 </>
               ) : (
-                'Sign Up'
+                "Sign Up"
               )}
             </Button>
           </form>
         </Form>
         <div className="text-center mt-4">
           <p>
-            Already a member?{' '}
+            Already a member?{" "}
             <Link href="/sign-in" className="text-blue-600 hover:text-blue-800">
               Sign in
             </Link>

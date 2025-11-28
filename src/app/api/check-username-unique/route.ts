@@ -1,21 +1,21 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/model/User";
-import {success, z} from 'zod'
+import {z} from 'zod'
 import { usernameValidation} from "@/schemas/signUpSchema";
 
-
 const UsernameQuerySchema = z.object({
-    username: usernameValidation
-})
+    username: usernameValidation })
+
+
+    console.log("Username secret checking ",UsernameQuerySchema);
+    
 
 export async function GET(request: Request){
     await dbConnect()
 
     try{
         const {searchParams} = new URL(request.url)
-        const queryParam = {
-            username: searchParams.get('username')
-        }
+        const queryParam = { username: searchParams.get('username')}
         //validate with zod
         const result = UsernameQuerySchema.safeParse(queryParam)
         console.log(result);
@@ -40,7 +40,7 @@ export async function GET(request: Request){
          return Response.json({
                 success: true,
                 message: 'Username is Unique',},
-            {status: 400})
+            {status: 200})
 
 
     }catch(error){

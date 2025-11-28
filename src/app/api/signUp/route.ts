@@ -43,9 +43,9 @@ export async function POST(request: Request) {
         await existingUserVerificationByEmail.save()
        }
 
-    }else{
+    }
+    else{
       const hashedpassword =  await bcrypt.hash(password,10)
-
       const expiryDate = new Date()
       expiryDate.setHours(expiryDate.getHours()+1)
       const newUser = new UserModel({
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
      return Response.json({
             success:true, 
             message:"User registered successfully, please verify your email"
-        },{status:201})
+        },{status:200})
 
   } catch (error) {
     console.error("Error registering user", error);
