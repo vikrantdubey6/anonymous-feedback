@@ -9,9 +9,9 @@ import { authOptions } from "../../auth/[...nextauth]/options"
 // import { success } from "zod/v4";
 
 export async function DELETE(request: NextRequest,
-    context:  {params:{messageid:string}}
+    context:  {params:Promise<{ messageid: string }>}
 ){
-     const messageId = context.params.messageid;
+     const messageId = await context.params
      await dbConnect();
      const session = await getServerSession(authOptions)
      const _user: User = session?.user;
