@@ -17,7 +17,7 @@ export async function DELETE(request: NextRequest,
      if (!session || !session.user) {
   return Response.json({ success: false, message: "Not authenticated" }, { status: 401 });
 }
-     const _user: User = session?.user;
+     const _user = session?.user ;
      if(!session || !_user){
         return Response.json({
             success:false,
