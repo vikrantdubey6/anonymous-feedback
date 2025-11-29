@@ -54,16 +54,30 @@ setIsLoading(true)
 setIsSwitchLoading(false)
 try {
  const response = await axios.get<ApiResponse>('/api/get-messages');
-        setMessages(response.data.messages || []);
-        if (refresh) {
+   
+        setMessages( response.data.messages || []);
+       
+          if(response.data.messages?.length === 0){
+         toast.promise(
+  Promise.resolve(), // instantly resolved promise
+  {
+    loading: 'Checking messages...',
+    success: 'Refreshed Messages, You do not have any message',
+    error: <b>Something went wrong</b>,
+  }
+)
+        }
+         else if (refresh) {
           toast.success(
            'Refreshed Messages'
             );
         }
       } catch (error) {
         // const axiosError = error as AxiosError<ApiResponse>;
-        toast.error('Failed to fetch messages',
-          );
+        // if(!fetchMessages || fetchMessages == null){
+          toast.error('Failed to fetch the messages');
+        // }
+
       } finally {
         setIsLoading(false);
         setIsSwitchLoading(false);

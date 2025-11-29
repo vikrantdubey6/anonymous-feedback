@@ -7,7 +7,6 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { CardHeader, CardContent, Card } from '@/components/ui/card';
-import {useCompletion}  from '@ai-sdk/react';
 import {
   Form,
   FormControl,
@@ -37,15 +36,9 @@ export default function SendMessage() {
   const params = useParams<{ username: string }>();
   const username = params.username;
 
-  const {
-    complete,
-    completion,
-    isLoading: isSuggestLoading,
-    error,
-  } = useCompletion({
-    api: '/api/suggest-messages',
-    initialCompletion: initialMessageString,
-  });
+  const [completion, setCompletion] = useState(initialMessageString);
+  const [isSuggestLoading, setIsSuggestLoading] = useState(false);
+  const [streamError, setStreamError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof messageSchema>>({
     resolver: zodResolver(messageSchema),
@@ -67,24 +60,51 @@ export default function SendMessage() {
         username,
       });
 
-      toast.success(
-       "Message sent successfully"  );
+      toast.success("Message sent successfully");
       form.reset({ ...form.getValues(), content: '' });
     } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast.error(
-          "failed to sent the message" )
+      toast.error("failed to send the message");
     } finally {
       setIsLoading(false);
     }
   };
 
+  //  -----------------------------
+  //  🔥 CUSTOM STREAMING HANDLER
+  //  -----------------------------
   const fetchSuggestedMessages = async () => {
+    setIsSuggestLoading(true);
+    setStreamError(null);
+    setCompletion(""); // reset
+
     try {
-      complete('');
+      const response = await fetch('/api/suggest-messages', { method: 'POST' });
+
+      if (!response.body) {
+        setStreamError("No response from API");
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      let partial = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        partial += chunk;
+
+        setCompletion(partial); // 💥 updates UI live while streaming
+      }
+
     } catch (error) {
-      console.error('Error fetching messages:', error);
-      // Handle error appropriately
+      console.error('Streaming Error:', error);
+      setStreamError("Failed to fetch messages");
+    } finally {
+      setIsSuggestLoading(false);
     }
   };
 
@@ -93,6 +113,8 @@ export default function SendMessage() {
       <h1 className="text-4xl font-bold mb-6 text-center">
         Public Profile Link
       </h1>
+
+      {/* SEND MESSAGE FORM */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -112,6 +134,7 @@ export default function SendMessage() {
               </FormItem>
             )}
           />
+
           <div className="flex justify-center">
             {isLoading ? (
               <Button disabled>
@@ -127,6 +150,7 @@ export default function SendMessage() {
         </form>
       </Form>
 
+      {/* SUGGESTED MESSAGES */}
       <div className="space-y-4 my-8">
         <div className="space-y-2">
           <Button
@@ -134,17 +158,19 @@ export default function SendMessage() {
             className="my-4"
             disabled={isSuggestLoading}
           >
-            Suggest Messages
+            {isSuggestLoading ? "Generating..." : "Suggest Messages"}
           </Button>
           <p>Click on any message below to select it.</p>
         </div>
+
         <Card>
           <CardHeader>
             <h3 className="text-xl font-semibold">Messages</h3>
           </CardHeader>
+
           <CardContent className="flex flex-col space-y-4">
-            {error ? (
-              <p className="text-red-500">{error.message}</p>
+            {streamError ? (
+              <p className="text-red-500">{streamError}</p>
             ) : (
               parseStringMessages(completion).map((message, index) => (
                 <Button
@@ -160,6 +186,7 @@ export default function SendMessage() {
           </CardContent>
         </Card>
       </div>
+
       <Separator className="my-6" />
       <div className="text-center">
         <div className="mb-4">Get Your Message Board</div>

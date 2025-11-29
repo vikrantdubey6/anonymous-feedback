@@ -7,7 +7,7 @@ const UsernameQuerySchema = z.object({
     username: usernameValidation })
 
 
-    console.log("Username secret checking ",UsernameQuerySchema);
+    // console.log("Username secret checking ",UsernameQuerySchema);
     
 
 export async function GET(request: Request){
