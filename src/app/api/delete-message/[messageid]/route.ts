@@ -14,6 +14,9 @@ export async function DELETE(request: NextRequest,
      const messageId = await context.params
      await dbConnect();
      const session = await getServerSession(authOptions)
+     if (!session || !session.user) {
+  return Response.json({ success: false, message: "Not authenticated" }, { status: 401 });
+}
      const _user: User = session?.user;
      if(!session || !_user){
         return Response.json({
