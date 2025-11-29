@@ -1,3 +1,4 @@
+
 import UserModel from "@/model/User";
 import { getServerSession } from "next-auth";
 import dbConnect from "@/lib/dbConnect";
@@ -7,10 +8,10 @@ import { NextRequest } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/options"
 // import { success } from "zod/v4";
 
-export async function DELETE(request: Request,
-    {params}: {params:{messageid:string}}
+export async function DELETE(request: NextRequest,
+    context:  {params:{messageid:string}}
 ){
-     const messageId = params.messageid;
+     const messageId = context.params.messageid;
      await dbConnect();
      const session = await getServerSession(authOptions)
      const _user: User = session?.user;
